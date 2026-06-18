@@ -1,44 +1,43 @@
 import { useState } from "react"
-import { movies } from "./data/movies"
 import type {Movie, MovieMood, MovieLength, MovieGenre} from "./types/movie"
-
+import {recommendMovie} from "./services/recommendMovie"
 type Screen = "start" | "questions" | "result"
 
+const moodOptions: MovieMood[] = ["fun", "serious", "action", "surprise"]
+const lengthOptions: MovieLength[] = ["short", "medium", "long", "no preference"]
+const genreOptions: MovieGenre[] = [
+"fantasy",
+"drama",
+"adventure",
+"comedy",
+"history",
+"animation",
+"thriller",
+"no preference",
+]
 export default function App() {
   const [screen, setScreen] = useState<Screen>("start")
   const [mood, setMood] = useState<MovieMood | null>(null)
   const [length, setLength] = useState<MovieLength>("no preference")
   const [recommendedMovie, setRecommendedMovie] = useState<Movie | null>(null)
   const [genre, setGenre] = useState<MovieGenre>("no preference")
-  const matchedMovies = movies.filter((movie) => {
-  const moodMatches = movie.mood === mood
-  const lengthMatches = length === "no preference" || movie.length === length
-  const genreMatches = genre === "no preference" || movie.genre === genre
-
-  return moodMatches && lengthMatches && genreMatches
-})
-
-  
-
   function start() {
     setScreen("questions")
   }
 
- function getRandomMovie(movieList: Movie[]) {
-  return movieList[Math.floor(Math.random() * movieList.length)]
-}
 
   function getMovie() {
     if (!mood) {
       return
     }
-    if (matchedMovies.length === 0) {
-        setRecommendedMovie(null)
-        setScreen("result")
-        return
-    }
+   
 
-    const randomMovie = getRandomMovie(matchedMovies)
+    const randomMovie = recommendMovie({mood, length, genre})
+    if (!randomMovie) {
+      setRecommendedMovie(null)
+      setScreen("result")
+      return
+    }
     setRecommendedMovie(randomMovie)
     setScreen("result")
   }
@@ -61,63 +60,41 @@ export default function App() {
   }
 
   if (screen === "questions") {
+    const moodButtons = moodOptions.map(option =>{
+      return (
+        <button type="button" key={option} onClick={() => setMood(option)}>
+          {option}
+        </button>
+      )
+    }
+      )
+
+      const lengthButtons = lengthOptions.map(option =>{
+        return (
+          <button type="button" key={option} onClick={() => setLength(option)}>
+            {option}
+          </button>
+        )
+      })
+
+          const genreButtons = genreOptions.map(option =>{
+        return (
+          <button type="button" key={option} onClick={() => setGenre(option)}>
+            {option}
+          </button>
+        )
+      })
+    
     return (
       <div>
         <p>What mood are you in?</p>
+        {moodButtons}
 
-        <button type="button" onClick={() => setMood("fun")}>
-          Fun
-        </button>
-
-        <button type="button" onClick={() => setMood("serious")}>
-          Serious
-        </button>
-
-        <button type="button" onClick={() => setMood("action")}>
-          Action
-        </button>
-
-        <button type="button" onClick={() => setMood("surprise")}>
-          Surprise
-        </button>
         <p>Durations</p>
-        <button type="button" onClick={() => setLength("short")}>
-          Short
-        </button>
-        <button type="button" onClick={() => setLength("medium")}>
-          Medium
-        </button>
-        <button type="button" onClick={() => setLength("long")}>
-          Long
-        </button>
-        <button type="button" onClick={() => setLength("no preference")}>
-          No Preference
-        </button>
-
-        <button type="button" onClick={() => setGenre("fantasy")}>
-          Fantasy
-        </button>
-        <button type="button" onClick={() => setGenre("drama")}>
-          Drama
-        </button>
-        <button type="button" onClick={() => setGenre("adventure")}>
-          Adventure
-        </button>
-        <button type="button" onClick={() => setGenre("comedy")}>
-          Comedy
-        </button>
-        <button type="button" onClick={() => setGenre("history")}>
-          History
-        </button>
-        <button type="button" onClick={() => setGenre("animation")}>
-          Animation
-        </button>
-        <button type="button" onClick={() => setGenre("thriller")}>
-          Thriller
-        </button>
-        <button type="button" onClick={() => setGenre("no preference")}>
-          No Preference
-        </button>
+        {lengthButtons}
+      
+        <p>Genres</p> 
+        {genreButtons}
 
         {mood && <p>You selected: {mood}</p>}
         {length === "no preference" ? null : <p>You selected: {length}</p>}
@@ -144,6 +121,8 @@ export default function App() {
   return (
   <div>
     <h2>{recommendedMovie.title}</h2>
+    <p>Genre: {recommendedMovie.genre}</p>
+    <p>Length: {recommendedMovie.length}</p>
     <p>Released: {recommendedMovie.releaseYear}</p>
     <p>{recommendedMovie.content}</p>
 
