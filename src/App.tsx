@@ -1,6 +1,8 @@
-import { useState } from "react"
+import { useState, type ChangeEvent } from "react"
 import type {Movie, MovieMood, MovieLength, MovieGenre} from "./types/movie"
 import {recommendMovie} from "./services/recommendMovie"
+import {OptionGroup} from "./components/OptionGroup"
+
 type Screen = "start" | "questions" | "result"
 
 const moodOptions: MovieMood[] = ["fun", "serious", "action", "surprise"]
@@ -21,6 +23,7 @@ export default function App() {
   const [length, setLength] = useState<MovieLength>("no preference")
   const [recommendedMovie, setRecommendedMovie] = useState<Movie | null>(null)
   const [genre, setGenre] = useState<MovieGenre>("no preference")
+  const [preferenceText, setPreferenceText] = useState<string>("")  
   function start() {
     setScreen("questions")
   }
@@ -32,7 +35,7 @@ export default function App() {
     }
    
 
-    const randomMovie = recommendMovie({mood, length, genre})
+    const randomMovie = recommendMovie({mood, length, genre, preferenceText})
     if (!randomMovie) {
       setRecommendedMovie(null)
       setScreen("result")
@@ -48,6 +51,11 @@ export default function App() {
     setLength("no preference")
     setGenre("no preference")
     setScreen("questions")
+    setPreferenceText("")
+  }
+
+  function handleChange(e: ChangeEvent<HTMLTextAreaElement>) {
+    setPreferenceText(e.target.value)
   }
   
 
@@ -58,43 +66,16 @@ export default function App() {
       </button>
     )
   }
-
+ 
   if (screen === "questions") {
-    const moodButtons = moodOptions.map(option =>{
-      return (
-        <button type="button" key={option} onClick={() => setMood(option)}>
-          {option}
-        </button>
-      )
-    }
-      )
-
-      const lengthButtons = lengthOptions.map(option =>{
-        return (
-          <button type="button" key={option} onClick={() => setLength(option)}>
-            {option}
-          </button>
-        )
-      })
-
-          const genreButtons = genreOptions.map(option =>{
-        return (
-          <button type="button" key={option} onClick={() => setGenre(option)}>
-            {option}
-          </button>
-        )
-      })
     
+ 
     return (
       <div>
-        <p>What mood are you in?</p>
-        {moodButtons}
-
-        <p>Durations</p>
-        {lengthButtons}
-      
-        <p>Genres</p> 
-        {genreButtons}
+        <OptionGroup title="What mood are you in?" options={moodOptions} onSelect={(option) => setMood(option as MovieMood)} />
+        <OptionGroup title="How long do you want the movie to be?" options={lengthOptions} onSelect={(option)=>setLength(option as MovieLength)} />
+        <OptionGroup title="What genre are you in the mood for?" options={genreOptions} onSelect={(option)=>setGenre(option as MovieGenre)} />
+        <textarea value={preferenceText} onChange={handleChange}></textarea>
 
         {mood && <p>You selected: {mood}</p>}
         {length === "no preference" ? null : <p>You selected: {length}</p>}
