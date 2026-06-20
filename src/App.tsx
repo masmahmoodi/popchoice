@@ -24,6 +24,9 @@ export default function App() {
   const [recommendedMovie, setRecommendedMovie] = useState<Movie | null>(null)
   const [genre, setGenre] = useState<MovieGenre>("no preference")
   const [preferenceText, setPreferenceText] = useState<string>("")  
+  const [recommendationQuery, setRecommendationQuery] = useState<string>("") 
+   
+  
   function start() {
     setScreen("questions")
   }
@@ -35,13 +38,10 @@ export default function App() {
     }
    
 
-    const randomMovie = recommendMovie({mood, length, genre, preferenceText})
-    if (!randomMovie) {
-      setRecommendedMovie(null)
-      setScreen("result")
-      return
-    }
-    setRecommendedMovie(randomMovie)
+    const recommendation = recommendMovie({mood, length, genre, preferenceText})
+   
+    setRecommendedMovie(recommendation.movie)
+    setRecommendationQuery(recommendation.query)
     setScreen("result")
   }
 
@@ -52,6 +52,7 @@ export default function App() {
     setGenre("no preference")
     setScreen("questions")
     setPreferenceText("")
+    setRecommendationQuery("")
   }
 
   function handleChange(e: ChangeEvent<HTMLTextAreaElement>) {
@@ -84,7 +85,7 @@ export default function App() {
         <button type="button" disabled={!mood} onClick={getMovie}>
           Get Movie
         </button>
-      </div>
+      </div> 
     )
   }
 
@@ -93,7 +94,7 @@ export default function App() {
     <div>
       <p>No movie found.</p>
       <button type="button" onClick={tryAgain}>
-        Try again
+        Try again    
       </button>
     </div>
   )
@@ -105,6 +106,7 @@ export default function App() {
     <p>Genre: {recommendedMovie.genre}</p>
     <p>Length: {recommendedMovie.length}</p>
     <p>Released: {recommendedMovie.releaseYear}</p>
+    <p>Query: {recommendationQuery}</p>
     <p>{recommendedMovie.content}</p>
 
     <button type="button" onClick={tryAgain}>

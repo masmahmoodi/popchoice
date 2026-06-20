@@ -30,7 +30,7 @@ export function recommendMovie({
   length,
   genre,
   preferenceText
-}: RecommendMovieOptions): Movie | null {
+}: RecommendMovieOptions): { movie: Movie | null, query: string } {
   const matchedMovies = movies.filter((movie) => {
     const moodMatches = movie.mood === mood
     const lengthMatches = length === "no preference" || movie.length === length
@@ -39,12 +39,12 @@ export function recommendMovie({
     return moodMatches && lengthMatches && genreMatches
   })
 
-  void buildRecommendationQuery(mood, length, genre, preferenceText)
+  const recommendationQuery = buildRecommendationQuery(mood, length, genre, preferenceText)
 
   if (matchedMovies.length === 0) {
-    return null
+    return { movie: null, query: recommendationQuery }
   }
 
 
-  return getRandomMovie(matchedMovies)
+  return{movie: getRandomMovie(matchedMovies), query: recommendationQuery}
 }
