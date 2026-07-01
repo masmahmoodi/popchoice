@@ -18,3 +18,11 @@ export type Movie = {
   length: MovieLength
   genre: MovieGenre
 }
+
+
+export type MatchedMovie = {
+  id: number
+  title: string
+  content: string
+  similarity: number
+}
